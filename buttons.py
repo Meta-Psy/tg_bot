@@ -1,31 +1,25 @@
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 
-def hello_bt():
+def get_number_bt():
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    begin = KeyboardButton('Заказать')
-    kb.add(begin)
-    return kb
-
-
-def get_telephone_bt():
-    kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    get_telephone_bt = KeyboardButton('Отправить телефон', request_contact=True)
-    kb.add(get_telephone_bt)
+    btn1 = KeyboardButton('Отправить номер', request_contact=True)
+    kb.add(btn1)
     return kb
 
 
 def get_location_bt():
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    get_location_bt = KeyboardButton('Отправить локацию', request_location=True)
-    kb.add(get_location_bt)
+    btn1 = KeyboardButton('Отправить локацию', request_location=True)
+    kb.add(btn1)
     return kb
+
 
 def main_menu_bt():
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    cart_bt = KeyboardButton('Корзина')
-    products_bt = KeyboardButton('Еда')
-    back_bt = KeyboardButton('Назад')
-    kb.add(cart_bt, products_bt)
-    kb.row(back_bt)
+    btn1 = KeyboardButton('Заказать')
+    btn2 = KeyboardButton('Корзина')
+    btn3 = KeyboardButton('Назад')
+    kb.row(btn1, btn2)
+    kb.row(btn3)
     return kb

@@ -28,6 +28,32 @@ cursor.execute('CREATE TABLE IF NOT EXISTS cart ('
                'quantity INTEGER, '
                'total_price REAL'
                ');')
+
+# cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
+#                '("Бургер", "Сочный бургер", 45000, '
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj9YK1kXl9d0umCSzj_1xeESlWg1G_9cSiDw&s",'
+#                '10)')
+#
+# cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
+#                '("Пицца", "Классическая пицца с сыром и томатным соусом", 75000, '
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpizzurlEX", 20)')
+#
+# cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
+#                '("Суши", "Ассорти из свежих суши с васаби и имбирем", 65000, '
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSushiURL", 15)')
+#
+# cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
+#                '("Паста", "Итальянская паста с соусом болоньезе", 70000, '
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcPastaURL", 10)')
+#
+# cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
+#                '("Салат Цезарь", "Свежий салат с курицей, пармезаном и соусом Цезарь", 50000, '
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcCaesarURL", 30)')
+#
+# cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
+#                '("Лимонад", "Освежающий лимонад с натуральными ингредиентами", 30000, '
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcLemonadeURL", 50)')
+
 conn.commit()
 conn.close()
 
@@ -53,3 +79,17 @@ def check_db(tg_id):
         return False
 
 
+def get_products():
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    products = cursor.execute('SELECT id, name, quantity FROM food WHERE quantity > 0').fetchall()
+    conn.close()
+    return products
+
+
+def get_product(prod_id):
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    product = cursor.execute('SELECT * FROM food WHERE id = ?', (prod_id, )).fetchone()
+    conn.close()
+    return product

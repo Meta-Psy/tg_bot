@@ -36,23 +36,23 @@ cursor.execute('CREATE TABLE IF NOT EXISTS cart ('
 #
 # cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
 #                '("Пицца", "Классическая пицца с сыром и томатным соусом", 75000, '
-#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpizzurlEX", 20)')
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj9YK1kXl9d0umCSzj_1xeESlWg1G_9cSiDw&s", 20)')
 #
 # cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
 #                '("Суши", "Ассорти из свежих суши с васаби и имбирем", 65000, '
-#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSushiURL", 15)')
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj9YK1kXl9d0umCSzj_1xeESlWg1G_9cSiDw&s", 15)')
 #
 # cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
 #                '("Паста", "Итальянская паста с соусом болоньезе", 70000, '
-#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcPastaURL", 10)')
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj9YK1kXl9d0umCSzj_1xeESlWg1G_9cSiDw&s", 10)')
 #
 # cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
 #                '("Салат Цезарь", "Свежий салат с курицей, пармезаном и соусом Цезарь", 50000, '
-#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcCaesarURL", 30)')
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj9YK1kXl9d0umCSzj_1xeESlWg1G_9cSiDw&s", 30)')
 #
 # cursor.execute('INSERT INTO food (name, descr, price, photo, quantity) VALUES '
 #                '("Лимонад", "Освежающий лимонад с натуральными ингредиентами", 30000, '
-#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcLemonadeURL", 50)')
+#                '"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj9YK1kXl9d0umCSzj_1xeESlWg1G_9cSiDw&s", 50)')
 
 conn.commit()
 conn.close()
@@ -120,6 +120,12 @@ def get_product_cart(user_id, pr_id):
     conn.close()
     return product
 
+def get_product_cart_name(user_id):
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    products = cursor.execute('SELECT pr_id FROM cart').fetchall()
+    conn.close()
+    return products
 def update_product_cart(quantity, user_id, pr_id):
     conn = sqlite3.connect(database='kfc.db')
     cursor = conn.cursor()

@@ -93,3 +93,29 @@ def get_product(prod_id):
     product = cursor.execute('SELECT * FROM food WHERE id = ?', (prod_id, )).fetchone()
     conn.close()
     return product
+
+
+def add_to_cart_db(user_id, pr_id, quantity, total_price):
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO cart (user_id, pr_id, quantity, total_price) VALUES (?, ?, ?, ?)',
+                   (user_id, pr_id, quantity, total_price))
+    conn.commit()
+    conn.close()
+
+
+def get_prod_cart(user_id):
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    cart = cursor.execute('SELECT pr_id, quantity, total_price FROM cart WHERE user_id=?',
+                          (user_id, )).fetchall()
+    conn.close()
+    return cart
+
+def del_prod_cart(user_id, prod_id):
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM cart WHERE user_id=? AND pr_id=?',
+                   (user_id, prod_id))
+    conn.commit()
+    conn.close()

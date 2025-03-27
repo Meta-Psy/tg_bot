@@ -41,6 +41,7 @@
     &quot;Python.Exam_part_2 Ахрор.executor&quot;: &quot;Run&quot;,
     &quot;Python.Exam_part_3 Akhror.executor&quot;: &quot;Run&quot;,
     &quot;Python.bot.executor&quot;: &quot;Run&quot;,
+    &quot;Python.buttons.executor&quot;: &quot;Run&quot;,
     &quot;Python.database.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,

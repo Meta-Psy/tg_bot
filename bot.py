@@ -55,9 +55,54 @@ def main_menu(message: Message):
         products = get_products()
         bot.send_message(chat_id, 'С чего начнем?', reply_markup=products_bt(products))
     elif message.text == 'Корзина':
-        pass
+        bot.delete_message(chat_id, message.id)
+        text = '📥 Корзина: \n\n'
+        count = 0
+        cart = get_prod_cart(chat_id)
+        tot_price = 0
+        for product in cart:
+            count += 1
+            pr_id = product[0]
+            product_info = get_product(pr_id)
+            pr_name = product_info[1]
+            quantity = product[1]
+            price = product_info[3]
+            text += (f'{count}. {pr_name}\n'
+                     f'{quantity} x {price} = {price * quantity}\n\n')
+            tot_price += price * quantity
+        text += f'\n\nИтого: {tot_price}'
+        bot.send_message(chat_id, text, reply_markup=redact_cart_bt(cart))
     elif message.text == 'Назад':
-        pass
+        bot.delete_message(chat_id, message.id)
+        bot.register_next_step_handler(message, start)
+    elif message.text == 'Оформить заказ':
+        bot.delete_message(chat_id, message.id)
+        text = '📥 Поступил новый заказ: \n\n'
+        count = 0
+        cart = get_prod_cart(chat_id)
+        tot_price = 0
+        for product in cart:
+            count += 1
+            pr_id = product[0]
+            product_info = get_product(pr_id)
+            pr_name = product_info[1]
+            quantity = product[1]
+            price = product_info[3]
+            total_price = product[2]
+            text += (f'{count}. {pr_name}\n'
+                     f'{quantity} x {price} = {price * quantity}\n\n')
+            tot_price += price * quantity
+        text += f'\n\nИтого: {tot_price}'
+        bot.send_message(-4711046085, text)
+        bot.send_message(chat_id, 'Заказ успешно оформлен. Ожидайте')
+        clear_cart(chat_id)
+    elif message.text == 'Очистить корзину':
+        clear_cart(chat_id)
+        products = get_products()
+        bot.send_message(chat_id, 'Ваша корзина очищена.\n'
+                                       'Хотели бы что-то заказать?', reply_markup=products_bt(products))
+
+
 
 
 @bot.callback_query_handler(lambda call: call.data in ['back', 'cart', 'plus', 'minus', 'add_to_cart'])
@@ -78,18 +123,29 @@ def calls(call: CallbackQuery):
         bot.send_message(chat_id, f'Продукт {name} успешно добавлен в корзину ✅', reply_markup=end_bt())
         bot.send_message(chat_id, f'Продолжим или вы готовы оформить заказ?', reply_markup=products_bt(products))
     elif call.data == 'plus':
-        users[chat_id]['pr_quantity'] += 1
-        count = users[chat_id]['pr_quantity']
-        bot.edit_message_reply_markup(chat_id, message_id=call.message.id, reply_markup=cart_bt(count=count))
+        prod_id = users[chat_id]['pr_id']
+        product = get_product(prod_id)
+        quantity = product[5]
+        change_product(quantity, prod_id)
+        if users[chat_id]['pr_quantity'] < quantity:
+            users[chat_id]['pr_quantity'] += 1
+            count = users[chat_id]['pr_quantity']
+            quantity -= 1
+            bot.edit_message_reply_markup(chat_id, message_id=call.message.id, reply_markup=cart_bt(count=count))
+        else:
+            count = users[chat_id]['pr_quantity']
+            bot.send_message(chat_id, 'Больше на складе не осталось продуктов', reply_markup=cart_bt(count=count))
     elif call.data == 'minus':
-        users[chat_id]['pr_quantity'] -= 1
-        count = users[chat_id]['pr_quantity']
-        bot.edit_message_reply_markup(chat_id, message_id=call.message.id, reply_markup=cart_bt(count=count))
+        if users[chat_id]['pr_quantity'] > 1:
+            users[chat_id]['pr_quantity'] -= 1
+            count = users[chat_id]['pr_quantity']
+            bot.edit_message_reply_markup(chat_id, message_id=call.message.id, reply_markup=cart_bt(count=count))
     elif call.data == 'cart':
         bot.delete_message(chat_id, call.message.id)
-        text = '📥 Корзина:'
+        text = '📥 Корзина: \n\n'
         count = 0
         cart = get_prod_cart(chat_id)
+        tot_price = 0
         for product in cart:
             count += 1
             pr_id = product[0]
@@ -99,7 +155,9 @@ def calls(call: CallbackQuery):
             price = product_info[3]
             total_price = product[2]
             text += (f'{count}. {pr_name}\n'
-                     f'{quantity} x {price} = {total_price}\n\n')
+                     f'{quantity} x {price} = {price*quantity}\n\n')
+            tot_price += price * quantity
+        text += f'\n\nИтого: {tot_price}'
         bot.send_message(chat_id, text, reply_markup=redact_cart_bt(cart))
 
 
@@ -110,19 +168,88 @@ def prod_calls(call: CallbackQuery):
     bot.delete_message(chat_id, call.message.id)
     product_id = call.data.replace('prod_', '')
     product = get_product(product_id)
-    users[chat_id] = {'pr_id': product[0], 'pr_quantity': 1, 'pr_price': product[3]}
-    bot.send_photo(chat_id, photo=product[4], caption=f'{product[1]}\n'
-                                                      f'{product[2]}\n'
-                                                      f'Цена: {product[3]}\n', reply_markup=cart_bt())
-
+    quantity = product[5]
+    if quantity > 0:
+        users[chat_id] = {'pr_id': product[0], 'pr_quantity': 1, 'pr_price': product[3]}
+        bot.send_photo(chat_id, photo=product[4], caption=f'{product[1]}\n'
+                                                          f'{product[2]}\n'
+                                                          f'Цена: {product[3]}\n', reply_markup=cart_bt())
 
 @bot.callback_query_handler(lambda call: 'cartpr_' in call.data)
 def cart_product(call: CallbackQuery):
     chat_id = call.message.chat.id
     message_id = call.message.id
     pr_id = call.data.replace('cartpr_', '')
-    cart = get_prod_cart(chat_id)
     del_prod_cart(chat_id, pr_id)
-    bot.edit_message_reply_markup(chat_id, message_id, reply_markup=redact_cart_bt(cart))
+    text = '📥 Корзина: \n\n'
+    count = 0
+    cart = get_prod_cart(chat_id)
+    tot_price = 0
+    for product in cart:
+        count += 1
+        pr_id = product[0]
+        product_info = get_product(pr_id)
+        pr_name = product_info[1]
+        quantity = product[1]
+        price = product_info[3]
+        total_price = product[2]
+        text += (f'{count}. {pr_name}\n'
+                 f'{quantity} x {price} = {price*quantity}\n\n')
+        tot_price += price * quantity
+    text += f'\n\nИтого: {tot_price}'
+    bot.edit_message_text(text, chat_id, message_id, reply_markup=redact_cart_bt(cart))
+
+@bot.callback_query_handler(lambda call: 'prplus_' in call.data)
+def product_plus(call: CallbackQuery):
+    chat_id = call.message.chat.id
+    message_id = call.message.id
+    pr_id = call.data.replace('prplus_', '')
+    quantity = get_product_cart(chat_id, pr_id)[0]
+    quantity += 1
+    update_product_cart(quantity, chat_id, pr_id)
+    text = '📥 Корзина: \n\n'
+    count = 0
+    cart = get_prod_cart(chat_id)
+    tot_price = 0
+    for product in cart:
+        count += 1
+        pr_id = product[0]
+        product_info = get_product(pr_id)
+        pr_name = product_info[1]
+        quantity = product[1]
+        price = product_info[3]
+        total_price = product[2]
+        text += (f'{count}. {pr_name}\n'
+                 f'{quantity} x {price} = {price*quantity}\n\n')
+        tot_price += price * quantity
+    text += f'\n\nИтого: {tot_price}'
+    bot.edit_message_text(text, chat_id, message_id, reply_markup=redact_cart_bt(cart))
+
+
+@bot.callback_query_handler(lambda call: 'prminus_' in call.data)
+def product_plus(call: CallbackQuery):
+    chat_id = call.message.chat.id
+    message_id = call.message.id
+    pr_id = call.data.replace('prminus_', '')
+    quantity = get_product_cart(chat_id, pr_id)[0]
+    quantity -= 1
+    update_product_cart(quantity, chat_id, pr_id)
+    text = '📥 Корзина: \n\n'
+    count = 0
+    cart = get_prod_cart(chat_id)
+    tot_price = 0
+    for product in cart:
+        count += 1
+        pr_id = product[0]
+        product_info = get_product(pr_id)
+        pr_name = product_info[1]
+        quantity = product[1]
+        price = product_info[3]
+        total_price = product[2]
+        text += (f'{count}. {pr_name}\n'
+                 f'{quantity} x {price} = {price*quantity}\n\n')
+        tot_price += price*quantity
+    text += f'\n\nИтого: {tot_price}'
+    bot.edit_message_text(text, chat_id, message_id, reply_markup=redact_cart_bt(cart))
 
 bot.infinity_polling()

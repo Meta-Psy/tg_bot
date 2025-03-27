@@ -112,10 +112,39 @@ def get_prod_cart(user_id):
     conn.close()
     return cart
 
+def get_product_cart(user_id, pr_id):
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    product = cursor.execute('SELECT quantity FROM cart WHERE user_id=? AND pr_id=?',
+                             (user_id, pr_id)).fetchone()
+    conn.close()
+    return product
+
+def update_product_cart(quantity, user_id, pr_id):
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    cursor.execute('UPDATE cart SET quantity=? WHERE user_id=? AND pr_id=?', (quantity, user_id, pr_id))
+    conn.commit()
+    conn.close()
+
 def del_prod_cart(user_id, prod_id):
     conn = sqlite3.connect(database='kfc.db')
     cursor = conn.cursor()
     cursor.execute('DELETE FROM cart WHERE user_id=? AND pr_id=?',
                    (user_id, prod_id))
+    conn.commit()
+    conn.close()
+
+def clear_cart(user_id):
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM cart WHERE user_id=?', (user_id, ))
+    conn.commit()
+    conn.close()
+
+def change_product(quantity, pr_id):
+    conn = sqlite3.connect(database='kfc.db')
+    cursor = conn.cursor()
+    cursor.execute('UPDATE food SET quantity=? WHERE id=?', (quantity, pr_id))
     conn.commit()
     conn.close()

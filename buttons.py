@@ -53,7 +53,7 @@ def end_bt():
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
     back = KeyboardButton('Назад')
     btn2 = KeyboardButton('Оформить заказ')
-    btn3 = KeyboardButton('Очистить')
+    btn3 = KeyboardButton('Очистить корзину')
     kb.add(back, btn2)
     kb.row(btn3)
     return kb
